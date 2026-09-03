@@ -1,0 +1,1861 @@
+source code
+   c code:
+ #include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+
+int graph[MAX][MAX];
+int visited[MAX];
+int recursionStack[MAX];
+int indegree[MAX];
+
+int n;
+
+/* Add an edge:
+   prerequisite -> dependent course
+*/
+void addEdge(int from, int to)
+{
+    graph[from][to] = 1;
+}
+
+/* --------------------------------------------------
+   DFS Cycle Detection
+-------------------------------------------------- */
+
+int dfsCycle(int node)
+{
+    visited[node] = 1;
+    recursionStack[node] = 1;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (graph[node][i])
+        {
+            /* Back edge means cycle */
+            if (!visited[i])
+            {
+                if (dfsCycle(i))
+                    return 1;
+            }
+            else if (recursionStack[i])
+            {
+                return 1;
+            }
+        }
+    }
+
+    recursionStack[node] = 0;
+
+    return 0;
+}
+
+int detectCycleDFS()
+{
+    for (int i = 0; i < n; i++)
+    {
+        visited[i] = 0;
+        recursionStack[i] = 0;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        if (!visited[i])
+        {
+            if (dfsCycle(i))
+                return 1;
+        }
+    }
+
+    return 0;
+}
+
+/* --------------------------------------------------
+   BFS / Kahn's Algorithm
+-------------------------------------------------- */
+
+void topologicalSortBFS()
+{
+    int queue[MAX];
+    int front = 0;
+    int rear = 0;
+    int count = 0;
+
+    /* Calculate indegree */
+    for (int i = 0; i < n; i++)
+        indegree[i] = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (graph[i][j])
+                indegree[j]++;
+        }
+    }
+
+    /* Add zero-indegree vertices */
+    for (int i = 0; i < n; i++)
+    {
+        if (indegree[i] == 0)
+            queue[rear++] = i;
+    }
+
+    printf("\nBFS / Kahn's Topological Order:\n");
+
+    while (front < rear)
+    {
+        int current = queue[front++];
+
+        printf("%d ", current);
+
+        count++;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (graph[current][i])
+            {
+                indegree[i]--;
+
+                if (indegree[i] == 0)
+                    queue[rear++] = i;
+            }
+        }
+    }
+
+    printf("\n");
+
+    if (count != n)
+    {
+        printf("Cycle Detected!\n");
+        printf("Topological sorting is not possible.\n");
+    }
+    else
+    {
+        printf("No Cycle Detected.\n");
+    }
+}
+
+/* --------------------------------------------------
+   DFS Topological Sort
+-------------------------------------------------- */
+
+void dfsTopological(int node, int stack[], int *top)
+{
+    visited[node] = 1;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (graph[node][i] && !visited[i])
+        {
+            dfsTopological(i, stack, top);
+        }
+    }
+
+    stack[(*top)++] = node;
+}
+
+void topologicalSortDFS()
+{
+    int stack[MAX];
+    int top = 0;
+
+    for (int i = 0; i < n; i++)
+        visited[i] = 0;
+
+    if (detectCycleDFS())
+    {
+        printf("\nDFS Result:\n");
+        printf("Cycle Detected!\n");
+        printf("Topological sorting is not possible.\n");
+        return;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        if (!visited[i])
+        {
+            dfsTopological(i, stack, &top);
+        }
+    }
+
+    printf("\nDFS Topological Order:\n");
+
+    for (int i = top - 1; i >= 0; i--)
+    {
+        printf("%d ", stack[i]);
+    }
+
+    printf("\n");
+    printf("No Cycle Detected.\n");
+}
+
+/* --------------------------------------------------
+   Main Function
+-------------------------------------------------- */
+
+int main()
+{
+    int edges;
+    int from, to;
+
+    printf("COURSE PREREQUISITE MANAGEMENT SYSTEM\n");
+    printf("======================================\n");
+
+    printf("\nEnter number of courses: ");
+    scanf("%d", &n);
+
+    /* Initialize graph */
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            graph[i][j] = 0;
+        }
+    }
+
+    printf("\nEnter number of prerequisite relationships: ");
+    scanf("%d", &edges);
+
+    printf("\nEnter relationships:\n");
+    printf("Example: 0 1 means Course 0 -> Course 1\n\n");
+
+    for (int i = 0; i < edges; i++)
+    {
+        printf("Relationship %d: ", i + 1);
+
+        scanf("%d %d", &from, &to);
+
+        addEdge(from, to);
+    }
+
+    /* Run BFS / Kahn's Algorithm */
+    topologicalSortBFS();
+
+    /* Run DFS */
+    topologicalSortDFS();
+
+    return 0;
+}
+html code:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Course Prerequisite Management System</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.header {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+.header p {
+    margin: 8px 0 0;
+}
+
+.container {
+    display: flex;
+    min-height: calc(100vh - 110px);
+}
+
+.sidebar {
+    width: 220px;
+    background: #0f172a;
+    color: white;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    text-align: center;
+}
+
+.sidebar button {
+    width: 100%;
+    padding: 13px;
+    margin: 6px 0;
+    border: none;
+    border-radius: 6px;
+    background: #1e293b;
+    color: white;
+    cursor: pointer;
+    text-align: left;
+}
+
+.sidebar button:hover {
+    background: #2563eb;
+}
+
+.main {
+    flex: 1;
+    padding: 30px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.card h3 {
+    color: #64748b;
+    margin: 0;
+}
+
+.card p {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+}
+
+.section h2 {
+    color: #1e3a8a;
+    border-bottom: 2px solid #dbeafe;
+    padding-bottom: 10px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+input {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    min-width: 210px;
+}
+
+button {
+    cursor: pointer;
+}
+
+.primary,
+.success-btn,
+.danger,
+.secondary {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+}
+
+.primary {
+    background: #2563eb;
+}
+
+.success-btn {
+    background: #16a34a;
+}
+
+.danger {
+    background: #dc2626;
+}
+
+.secondary {
+    background: #64748b;
+}
+
+.primary:hover {
+    background: #1d4ed8;
+}
+
+.success-btn:hover {
+    background: #15803d;
+}
+
+.danger:hover {
+    background: #b91c1c;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th {
+    background: #e2e8f0;
+    padding: 12px;
+    text-align: left;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.graph-container {
+    width: 100%;
+    overflow-x: auto;
+    background: #f8fafc;
+    border: 1px solid #dbeafe;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+#graphSvg {
+    display: block;
+    margin: auto;
+    min-width: 900px;
+    height: 400px;
+}
+
+.graph-node {
+    fill: white;
+    stroke: #2563eb;
+    stroke-width: 3;
+}
+
+.graph-node.bfs-node {
+    fill: #dcfce7;
+    stroke: #16a34a;
+    stroke-width: 5;
+}
+
+.graph-node.dfs-node {
+    fill: #fef3c7;
+    stroke: #d97706;
+    stroke-width: 5;
+}
+
+.graph-node.cycle-node {
+    fill: #fee2e2;
+    stroke: #dc2626;
+    stroke-width: 5;
+}
+
+.graph-node-text {
+    font-size: 16px;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.graph-course-name {
+    font-size: 11px;
+    text-anchor: middle;
+    fill: #475569;
+}
+
+.graph-arrow {
+    stroke: #475569;
+    stroke-width: 3;
+    fill: none;
+    marker-end: url(#arrow);
+}
+
+.relationship-box {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.algorithm-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.algorithm-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.algorithm-result {
+    background: white;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 7px;
+    line-height: 1.8;
+}
+
+.order-item {
+    display: inline-block;
+    padding: 7px 10px;
+    margin: 3px;
+    background: #dbeafe;
+    border-radius: 5px;
+}
+
+.no-cycle {
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.cycle {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.info-box {
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.footer {
+    background: #0f172a;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
+
+@media(max-width: 800px) {
+    .sidebar {
+        width: 170px;
+    }
+
+    .cards,
+    .algorithm-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Course Prerequisite Management System</h1>
+    <p>Directed Graph | BFS | DFS | Cycle Detection | Topological Sort</p>
+</div>
+
+<div class="container">
+
+<div class="sidebar">
+
+    <h2>Dashboard</h2>
+
+    <button onclick="goTo('top')">🏠 Dashboard</button>
+
+    <button onclick="goTo('courses')">📚 Courses</button>
+
+    <button onclick="goTo('prerequisites')">🔗 Prerequisites</button>
+
+    <button onclick="goTo('graphSection')">🕸 Graph</button>
+
+    <button onclick="goTo('algorithms')">⚙ Algorithms</button>
+
+</div>
+
+
+<div class="main" id="top">
+
+
+<!-- DASHBOARD -->
+
+<div class="cards">
+
+    <div class="card">
+        <h3>Total Courses</h3>
+        <p id="totalCourses">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Total Prerequisites</h3>
+        <p id="totalPrerequisites">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Cycle Status</h3>
+        <p id="cycleStatus">Not Checked</p>
+    </div>
+
+</div>
+
+
+<!-- COURSE INPUT -->
+
+<div class="section" id="courses">
+
+    <h2>📚 Add Course</h2>
+
+    <div class="form-row">
+
+        <input
+            type="text"
+            id="courseId"
+            placeholder="Course ID">
+
+        <input
+            type="text"
+            id="courseName"
+            placeholder="Course Name">
+
+        <button
+            class="primary"
+            onclick="addCourse()">
+            Add Course
+        </button>
+
+    </div>
+
+
+    <h2>Course List</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Course ID</th>
+                <th>Course Name</th>
+            </tr>
+        </thead>
+
+        <tbody id="courseTable"></tbody>
+
+    </table>
+
+</div>
+
+
+<!-- PREREQUISITE INPUT -->
+
+<div class="section" id="prerequisites">
+
+    <h2>🔗 Add Prerequisite</h2>
+
+    <div class="info-box">
+        Example: If 101 must be completed before 102,
+        enter <b>101 → 102</b>.
+    </div>
+
+    <div class="form-row">
+
+        <input
+            type="text"
+            id="prerequisite"
+            placeholder="Prerequisite Course ID">
+
+        <input
+            type="text"
+            id="dependent"
+            placeholder="Dependent Course ID">
+
+        <button
+            class="primary"
+            onclick="addPrerequisite()">
+            Add Prerequisite
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- GRAPH -->
+
+<div class="section" id="graphSection">
+
+    <h2>🕸 Graph Visualization</h2>
+
+    <div class="graph-container">
+
+        <svg id="graphSvg" viewBox="0 0 1000 400">
+
+            <defs>
+
+                <marker
+                    id="arrow"
+                    markerWidth="10"
+                    markerHeight="10"
+                    refX="9"
+                    refY="3"
+                    orient="auto">
+
+                    <path
+                        d="M0,0 L0,6 L9,3 z"
+                        fill="#475569">
+                    </path>
+
+                </marker>
+
+            </defs>
+
+        </svg>
+
+    </div>
+
+    <div
+        class="relationship-box"
+        id="relationshipText">
+
+        No prerequisite relationships yet.
+
+    </div>
+
+</div>
+
+
+<!-- ALGORITHMS -->
+
+<div class="section" id="algorithms">
+
+    <h2>⚙ Algorithms</h2>
+
+    <div class="algorithm-grid">
+
+
+        <!-- BFS -->
+
+        <div class="algorithm-box">
+
+            <h3>BFS / Kahn's Algorithm</h3>
+
+            <p>
+                Uses indegree and a queue to perform
+                topological sorting.
+            </p>
+
+            <button
+                class="success-btn"
+                onclick="runBFS()">
+
+                Run BFS
+
+            </button>
+
+            <div
+                class="algorithm-result"
+                id="bfsResult">
+
+                Not executed yet.
+
+            </div>
+
+        </div>
+
+
+        <!-- DFS -->
+
+        <div class="algorithm-box">
+
+            <h3>DFS Algorithm</h3>
+
+            <p>
+                Uses depth-first traversal and detects
+                back edges to identify cycles.
+            </p>
+
+            <button
+                class="success-btn"
+                onclick="runDFS()">
+
+                Run DFS
+
+            </button>
+
+            <div
+                class="algorithm-result"
+                id="dfsResult">
+
+                Not executed yet.
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <br>
+
+    <button
+        class="secondary"
+        onclick="loadSampleData()">
+
+        Load Sample Data
+
+    </button>
+
+    <button
+        class="danger"
+        onclick="clearAll()">
+
+        Clear All
+
+    </button>
+
+</div>
+
+
+<!-- PROJECT INFORMATION -->
+
+<div class="section">
+
+    <h2>📌 Project Description</h2>
+
+    <p>
+        This system represents courses and their
+        prerequisites using a directed graph.
+    </p>
+
+    <p>
+        An edge A → B means that course A must be
+        completed before course B.
+    </p>
+
+    <p>
+        BFS/Kahn's Algorithm and DFS are used for
+        topological sorting and cycle detection.
+    </p>
+
+</div>
+
+</div>
+</div>
+
+
+<div class="footer">
+    Course Prerequisite Management System
+</div>
+
+
+<script>
+
+/* =====================================================
+   DATA
+===================================================== */
+
+let courses = [];
+
+let prerequisites = [];
+
+
+/* =====================================================
+   ADD COURSE
+===================================================== */
+
+function addCourse() {
+
+    let id =
+        document.getElementById("courseId").value.trim();
+
+    let name =
+        document.getElementById("courseName").value.trim();
+
+
+    if (id === "" || name === "") {
+
+        alert("Please enter Course ID and Course Name.");
+
+        return;
+    }
+
+
+    if (courses.some(c => c.id === id)) {
+
+        alert("Course ID already exists.");
+
+        return;
+    }
+
+
+    courses.push({
+        id: id,
+        name: name
+    });
+
+
+    document.getElementById("courseId").value = "";
+
+    document.getElementById("courseName").value = "";
+
+
+    displayCourses();
+
+    updateDashboard();
+
+    displayGraph();
+}
+
+
+/* =====================================================
+   DISPLAY COURSES
+===================================================== */
+
+function displayCourses() {
+
+    let table =
+        document.getElementById("courseTable");
+
+
+    table.innerHTML = "";
+
+
+    courses.forEach(course => {
+
+        let row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+            <td><strong>${course.id}</strong></td>
+            <td>${course.name}</td>
+        `;
+
+
+        table.appendChild(row);
+
+    });
+}
+
+
+/* =====================================================
+   ADD PREREQUISITE
+===================================================== */
+
+function addPrerequisite() {
+
+    let from =
+        document.getElementById("prerequisite").value.trim();
+
+    let to =
+        document.getElementById("dependent").value.trim();
+
+
+    if (from === "" || to === "") {
+
+        alert("Please enter both Course IDs.");
+
+        return;
+    }
+
+
+    if (from === to) {
+
+        alert("A course cannot depend on itself.");
+
+        return;
+    }
+
+
+    if (!courses.some(c => c.id === from)) {
+
+        alert("Prerequisite course does not exist.");
+
+        return;
+    }
+
+
+    if (!courses.some(c => c.id === to)) {
+
+        alert("Dependent course does not exist.");
+
+        return;
+    }
+
+
+    if (
+        prerequisites.some(
+            e => e.from === from && e.to === to
+        )
+    ) {
+
+        alert("Relationship already exists.");
+
+        return;
+    }
+
+
+    prerequisites.push({
+        from: from,
+        to: to
+    });
+
+
+    document.getElementById("prerequisite").value = "";
+
+    document.getElementById("dependent").value = "";
+
+
+    displayGraph();
+
+    updateDashboard();
+}
+
+
+/* =====================================================
+   CREATE GRAPH
+===================================================== */
+
+function createGraph() {
+
+    let graph = {};
+
+
+    courses.forEach(course => {
+
+        graph[course.id] = [];
+
+    });
+
+
+    prerequisites.forEach(edge => {
+
+        graph[edge.from].push(edge.to);
+
+    });
+
+
+    return graph;
+}
+
+
+/* =====================================================
+   UPDATE DASHBOARD
+===================================================== */
+
+function updateDashboard() {
+
+    document.getElementById("totalCourses").innerText =
+        courses.length;
+
+
+    document.getElementById("totalPrerequisites").innerText =
+        prerequisites.length;
+}
+
+
+/* =====================================================
+   DISPLAY GRAPH
+===================================================== */
+
+function displayGraph() {
+
+    let svg =
+        document.getElementById("graphSvg");
+
+
+    let text =
+        document.getElementById("relationshipText");
+
+
+    svg.innerHTML = `
+
+        <defs>
+
+            <marker
+                id="arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="9"
+                refY="3"
+                orient="auto">
+
+                <path
+                    d="M0,0 L0,6 L9,3 z"
+                    fill="#475569">
+                </path>
+
+            </marker>
+
+        </defs>
+
+    `;
+
+
+    if (courses.length === 0) {
+
+        svg.innerHTML += `
+            <text
+                x="500"
+                y="200"
+                text-anchor="middle"
+                font-size="22"
+                fill="#64748b">
+
+                Add courses to display the graph
+
+            </text>
+        `;
+
+        text.innerText =
+            "No courses available.";
+
+        return;
+    }
+
+
+    let positions = {};
+
+    let count = courses.length;
+
+
+    let spacing =
+        count === 1 ? 0 : 850 / (count - 1);
+
+
+    courses.forEach((course, index) => {
+
+        positions[course.id] = {
+
+            x:
+                count === 1
+                ? 500
+                : 75 + index * spacing,
+
+            y: 190
+
+        };
+
+    });
+
+
+    /* Draw arrows */
+
+    prerequisites.forEach(edge => {
+
+        let from =
+            positions[edge.from];
+
+        let to =
+            positions[edge.to];
+
+
+        let line =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "line"
+            );
+
+
+        let x1 = from.x;
+
+        let x2 = to.x;
+
+
+        if (x2 >= x1) {
+
+            x1 += 45;
+
+            x2 -= 45;
+
+        } else {
+
+            x1 -= 45;
+
+            x2 += 45;
+
+        }
+
+
+        line.setAttribute("x1", x1);
+
+        line.setAttribute("y1", from.y);
+
+        line.setAttribute("x2", x2);
+
+        line.setAttribute("y2", to.y);
+
+        line.setAttribute(
+            "class",
+            "graph-arrow"
+        );
+
+
+        svg.appendChild(line);
+
+    });
+
+
+    /* Draw nodes */
+
+    courses.forEach(course => {
+
+        let position =
+            positions[course.id];
+
+
+        let circle =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
+            );
+
+
+        circle.setAttribute(
+            "cx",
+            position.x
+        );
+
+        circle.setAttribute(
+            "cy",
+            position.y
+        );
+
+        circle.setAttribute(
+            "r",
+            "45"
+        );
+
+        circle.setAttribute(
+            "class",
+            "graph-node"
+        );
+
+        circle.setAttribute(
+            "data-id",
+            course.id
+        );
+
+
+        svg.appendChild(circle);
+
+
+        let idText =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+
+
+        idText.setAttribute(
+            "x",
+            position.x
+        );
+
+        idText.setAttribute(
+            "y",
+            position.y
+        );
+
+        idText.setAttribute(
+            "class",
+            "graph-node-text"
+        );
+
+        idText.textContent =
+            course.id;
+
+
+        svg.appendChild(idText);
+
+
+        let nameText =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+
+
+        nameText.setAttribute(
+            "x",
+            position.x
+        );
+
+        nameText.setAttribute(
+            "y",
+            position.y + 70
+        );
+
+        nameText.setAttribute(
+            "class",
+            "graph-course-name"
+        );
+
+
+        let name = course.name;
+
+        if (name.length > 20) {
+
+            name =
+                name.substring(0, 20) + "...";
+
+        }
+
+
+        nameText.textContent = name;
+
+
+        svg.appendChild(nameText);
+
+    });
+
+
+    if (prerequisites.length === 0) {
+
+        text.innerHTML =
+            "No prerequisite relationships yet.";
+
+    } else {
+
+        text.innerHTML =
+            "<strong>Relationships:</strong><br><br>" +
+
+            prerequisites.map(
+                e =>
+                    `<span class="order-item">
+                        ${e.from} → ${e.to}
+                    </span>`
+            ).join("");
+
+    }
+}
+
+
+/* =====================================================
+   BFS / KAHN
+===================================================== */
+
+function runBFS() {
+
+    if (courses.length === 0) {
+
+        alert("Please add courses first.");
+
+        return;
+    }
+
+
+    let graph = createGraph();
+
+    let indegree = {};
+
+
+    courses.forEach(course => {
+
+        indegree[course.id] = 0;
+
+    });
+
+
+    prerequisites.forEach(edge => {
+
+        indegree[edge.to]++;
+
+    });
+
+
+    let queue = [];
+
+
+    courses.forEach(course => {
+
+        if (indegree[course.id] === 0) {
+
+            queue.push(course.id);
+
+        }
+
+    });
+
+
+    let order = [];
+
+
+    while (queue.length > 0) {
+
+        let current =
+            queue.shift();
+
+
+        order.push(current);
+
+
+        graph[current].forEach(next => {
+
+            indegree[next]--;
+
+
+            if (indegree[next] === 0) {
+
+                queue.push(next);
+
+            }
+
+        });
+
+    }
+
+
+    let result =
+        document.getElementById("bfsResult");
+
+
+    if (order.length !== courses.length) {
+
+        result.innerHTML = `
+            <span class="cycle">
+                ⚠ Cycle Detected!<br>
+                Topological sorting is not possible.
+            </span>
+        `;
+
+
+        document.getElementById("cycleStatus").innerHTML =
+            `<span class="cycle">Cycle Detected</span>`;
+
+
+        highlightCycle();
+
+        return;
+    }
+
+
+    let html =
+        `<span class="no-cycle">
+            ✓ No Cycle Detected
+        </span>
+        <br><br>
+        <strong>Topological Order:</strong><br>`;
+
+
+    order.forEach((id, index) => {
+
+        html +=
+            `<span class="order-item">${id}</span>`;
+
+
+        if (index < order.length - 1) {
+
+            html += " → ";
+
+        }
+
+    });
+
+
+    result.innerHTML = html;
+
+
+    document.getElementById("cycleStatus").innerHTML =
+        `<span class="no-cycle">No Cycle</span>`;
+
+
+    highlightBFS(order);
+}
+
+
+/* =====================================================
+   DFS CYCLE DETECTION
+===================================================== */
+
+function runDFS() {
+
+    if (courses.length === 0) {
+
+        alert("Please add courses first.");
+
+        return;
+    }
+
+
+    let graph = createGraph();
+
+    let state = {};
+
+    let stack = [];
+
+    let cycle = false;
+
+
+    courses.forEach(course => {
+
+        state[course.id] = 0;
+
+    });
+
+
+    function dfs(node) {
+
+        state[node] = 1;
+
+
+        for (let next of graph[node]) {
+
+            if (state[next] === 1) {
+
+                cycle = true;
+
+                return;
+            }
+
+
+            if (state[next] === 0) {
+
+                dfs(next);
+
+                if (cycle)
+                    return;
+            }
+        }
+
+
+        state[node] = 2;
+
+        stack.push(node);
+    }
+
+
+    for (let course of courses) {
+
+        if (state[course.id] === 0) {
+
+            dfs(course.id);
+
+            if (cycle)
+                break;
+        }
+    }
+
+
+    let result =
+        document.getElementById("dfsResult");
+
+
+    if (cycle) {
+
+        result.innerHTML = `
+            <span class="cycle">
+                ⚠ Cycle Detected!<br>
+                Topological sorting is not possible.
+            </span>
+        `;
+
+
+        document.getElementById("cycleStatus").innerHTML =
+            `<span class="cycle">Cycle Detected</span>`;
+
+
+        highlightCycle();
+
+        return;
+    }
+
+
+    stack.reverse();
+
+
+    let html =
+        `<span class="no-cycle">
+            ✓ No Cycle Detected
+        </span>
+        <br><br>
+        <strong>Topological Order:</strong><br>`;
+
+
+    stack.forEach((id, index) => {
+
+        html +=
+            `<span class="order-item">${id}</span>`;
+
+
+        if (index < stack.length - 1) {
+
+            html += " → ";
+
+        }
+
+    });
+
+
+    result.innerHTML = html;
+
+
+    document.getElementById("cycleStatus").innerHTML =
+        `<span class="no-cycle">No Cycle</span>`;
+
+
+    highlightDFS(stack);
+}
+
+
+/* =====================================================
+   HIGHLIGHT BFS
+===================================================== */
+
+function highlightBFS(order) {
+
+    clearHighlights();
+
+
+    order.forEach(id => {
+
+        let node =
+            document.querySelector(
+                `.graph-node[data-id="${id}"]`
+            );
+
+
+        if (node) {
+
+            node.classList.add("bfs-node");
+
+        }
+
+    });
+}
+
+
+/* =====================================================
+   HIGHLIGHT DFS
+===================================================== */
+
+function highlightDFS(order) {
+
+    clearHighlights();
+
+
+    order.forEach(id => {
+
+        let node =
+            document.querySelector(
+                `.graph-node[data-id="${id}"]`
+            );
+
+
+        if (node) {
+
+            node.classList.add("dfs-node");
+
+        }
+
+    });
+}
+
+
+/* =====================================================
+   HIGHLIGHT CYCLE
+===================================================== */
+
+function highlightCycle() {
+
+    clearHighlights();
+
+
+    document
+        .querySelectorAll(".graph-node")
+        .forEach(node => {
+
+            node.classList.add("cycle-node");
+
+        });
+}
+
+
+/* =====================================================
+   CLEAR HIGHLIGHTS
+===================================================== */
+
+function clearHighlights() {
+
+    document
+        .querySelectorAll(".graph-node")
+        .forEach(node => {
+
+            node.classList.remove(
+                "bfs-node",
+                "dfs-node",
+                "cycle-node"
+            );
+
+        });
+}
+
+
+/* =====================================================
+   SAMPLE DATA
+===================================================== */
+
+function loadSampleData() {
+
+    courses = [
+
+        {
+            id: "101",
+            name: "Programming"
+        },
+
+        {
+            id: "102",
+            name: "Data Structures"
+        },
+
+        {
+            id: "201",
+            name: "Algorithms"
+        },
+
+        {
+            id: "301",
+            name: "Database Systems"
+        },
+
+        {
+            id: "401",
+            name: "Artificial Intelligence"
+        }
+
+    ];
+
+
+    prerequisites = [
+
+        {
+            from: "101",
+            to: "102"
+        },
+
+        {
+            from: "102",
+            to: "201"
+        },
+
+        {
+            from: "201",
+            to: "301"
+        },
+
+        {
+            from: "301",
+            to: "401"
+        }
+
+    ];
+
+
+    displayCourses();
+
+    displayGraph();
+
+    updateDashboard();
+
+
+    document.getElementById("bfsResult").innerText =
+        "Click Run BFS.";
+
+    document.getElementById("dfsResult").innerText =
+        "Click Run DFS.";
+
+    document.getElementById("cycleStatus").innerText =
+        "Not Checked";
+}
+
+
+/* =====================================================
+   CLEAR ALL
+===================================================== */
+
+function clearAll() {
+
+    if (
+        !confirm(
+            "Clear all courses and prerequisites?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    courses = [];
+
+    prerequisites = [];
+
+
+    displayCourses();
+
+    displayGraph();
+
+    updateDashboard();
+
+
+    document.getElementById("bfsResult").innerText =
+        "Not executed yet.";
+
+    document.getElementById("dfsResult").innerText =
+        "Not executed yet.";
+
+    document.getElementById("cycleStatus").innerText =
+        "Not Checked";
+}
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function goTo(section) {
+
+    if (section === "top") {
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+        return;
+    }
+
+
+    let element =
+        document.getElementById(section);
+
+
+    if (element) {
+
+        element.scrollIntoView({
+            behavior: "smooth"
+        });
+
+    }
+}
+
+
+/* =====================================================
+   INITIALIZATION
+===================================================== */
+
+displayCourses();
+
+displayGraph();
+
+updateDashboard();
+
+</script>
+
+</body>
+</html>
